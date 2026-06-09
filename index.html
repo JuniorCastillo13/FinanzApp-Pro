@@ -31,6 +31,53 @@
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
 
+    <!-- PANTALLA DE LOGIN (GATE DE SEGURIDAD) -->
+    <div id="login-gate" class="fixed inset-0 bg-slate-900/85 backdrop-blur-md z-[100] flex items-center justify-center transition-all duration-350">
+        <div class="bg-white rounded-3xl p-6 sm:p-10 max-w-md w-full mx-4 shadow-2xl border border-slate-100 relative">
+            <div class="flex flex-col items-center text-center mb-6">
+                <div class="bg-emerald-600 text-white p-3.5 rounded-2xl shadow-lg shadow-emerald-200 mb-4">
+                    <!-- Icono SVG de Candado/Finanzas -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                </div>
+                <h2 class="text-2xl font-black text-slate-900 tracking-tight">FinanzApp Cloud Pro</h2>
+                <p class="text-xs text-slate-500 mt-1">Ingresa tus credenciales para administrar tus finanzas y sincronizar tus datos en la nube</p>
+            </div>
+
+            <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label for="login-username" class="block text-xs font-semibold text-slate-500 mb-1">Usuario de Acceso</label>
+                    <input type="text" id="login-username" required placeholder="Ingresa tu usuario" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-slate-50/50">
+                </div>
+                <div>
+                    <label for="login-password" class="block text-xs font-semibold text-slate-500 mb-1">Contraseña</label>
+                    <input type="password" id="login-password" required placeholder="••••••••••••" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm bg-slate-50/50">
+                </div>
+
+                <!-- Sección de pistas del sistema -->
+                <div class="bg-slate-50 rounded-xl p-3 border border-slate-150">
+                    <button type="button" onclick="togglePasswordHint()" class="text-xs font-bold text-slate-500 hover:text-indigo-600 flex items-center justify-between w-full">
+                        <span>¿Olvidaste tu contraseña?</span>
+                        <svg id="hint-arrow" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transform transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <div id="password-hint" class="hidden mt-2 text-[11px] text-slate-500 leading-relaxed border-t border-slate-200/60 pt-2">
+                        💡 <strong>Pista del administrador:</strong> <span class="italic text-indigo-600 font-medium">"la celosa, nacimiento, arroba"</span>
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full bg-slate-950 hover:bg-slate-800 text-white font-bold text-sm py-3 rounded-xl transition-all shadow-lg shadow-slate-200 flex items-center justify-center space-x-2">
+                    <span>Iniciar Sesión</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                    </svg>
+                </button>
+            </form>
+        </div>
+    </div>
+
     <!-- Encabezado / Barra de Navegación -->
     <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -43,7 +90,12 @@
                         </svg>
                     </div>
                     <div>
-                        <h1 class="text-xl font-bold text-slate-900 tracking-tight">FinanzApp Pro</h1>
+                        <div class="flex items-center space-x-2">
+                            <h1 class="text-xl font-bold text-slate-900 tracking-tight">FinanzApp Pro</h1>
+                            <span class="bg-emerald-100 text-emerald-800 text-[9px] font-extrabold px-1.5 py-0.5 rounded-full uppercase tracking-widest flex items-center">
+                                <span class="h-1.5 w-1.5 rounded-full bg-emerald-500 inline-block mr-1 animate-pulse"></span> Cloud
+                            </span>
+                        </div>
                         <p class="text-xs text-slate-500">Gestor de Finanzas, Recortes & Salud Financiera</p>
                     </div>
                 </div>
@@ -61,6 +113,9 @@
                     </button>
                     <button onclick="resetAllData()" class="text-rose-500 hover:text-rose-700 text-xs px-2 py-1 hover:bg-rose-50 rounded transition-all">
                         Limpiar Todo
+                    </button>
+                    <button onclick="logout()" class="text-slate-400 hover:text-rose-600 text-xs px-2.5 py-1 hover:bg-slate-100 rounded-lg transition-all border border-slate-200 font-medium">
+                        Salir
                     </button>
                 </div>
             </div>
@@ -422,7 +477,7 @@
 
     </main>
 
-    <!-- MODAL PARA REGISTRAR GASTO RECURRENTE (NUEVO) -->
+    <!-- MODAL PARA REGISTRAR GASTO RECURRENTE -->
     <div id="recurrent-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
         <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full mx-4 shadow-2xl relative transform scale-95 transition-transform duration-300" id="recurrent-modal-card">
             <button onclick="toggleModal('recurrent-modal', false)" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
@@ -601,55 +656,186 @@
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="bg-white border-t border-slate-200 mt-12 py-6">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-4">
-            <p class="text-xs text-slate-400">© 2026 FinanzApp Pro. Organiza tus finanzas, erradica tus deudas de forma inteligente.</p>
-            <div class="flex space-x-6">
-                <span class="text-xs text-emerald-600 font-semibold flex items-center">
-                    <span class="h-2 w-2 rounded-full bg-emerald-500 inline-block mr-1.5 animate-pulse"></span>
-                    Toda tu información está segura localmente
-                </span>
-            </div>
-        </div>
-    </footer>
+    <!-- SDK e Inicialización Inteligente de Firebase -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+        // --- CONFIGURACIÓN DE FIREBASE E INSTANCIAS ---
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = JSON.parse(__firebase_config);
+        
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Exponer servicios para el resto del script estructurado clásico
+        window.firebaseAuth = auth;
+        window.firebaseDb = db;
+        window.appId = appId;
+        window.signInWithCustomToken = signInWithCustomToken;
+        window.signInAnonymously = signInAnonymously;
+        window.signOut = signOut;
+        window.firestoreDoc = doc;
+        window.firestoreGetDoc = getDoc;
+        window.firestoreSetDoc = setDoc;
+
+        // Listener de estado de autenticación de Firebase
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                console.log("Firebase Auth Completada. UID:", user.uid);
+                // Si el gate de admin ya se validó, cargamos desde Firestore
+                if (sessionStorage.getItem('finanzapp_auth_pro') === 'true') {
+                    await loadStateFromFirestore(user.uid);
+                }
+            } else {
+                console.log("Firebase Auth: Sin usuario.");
+            }
+        });
+    </script>
+
+    <!-- Script de lógica de aplicación -->
     <script>
         // --- VARIABLES DE ESTADO ---
         let state = {
             transactions: [],
             debts: [],
-            recurrents: [], // Nuevo estado para gastos fijos recurrentes
-            activeStrategy: 'snowball', // 'snowball' o 'avalanche'
-            transactionFormType: 'income' // 'income' o 'expense'
+            recurrents: [],
+            activeStrategy: 'snowball',
+            transactionFormType: 'income'
         };
 
-        // --- INICIALIZACIÓN DE LA APLICACIÓN ---
+        // Guardado con debounce para evitar llamadas excesivas a Firestore
+        let saveDebounceTimeout = null;
+
+        // --- SISTEMA DE AUTENTICACIÓN ADMIN GATE ---
         window.onload = function() {
-            // Cargar datos persistidos o inicializar vacíos
-            const localData = localStorage.getItem('finanzapp_data_pro');
-            if (localData) {
-                try {
-                    state = JSON.parse(localData);
-                } catch(e) {
-                    console.error("Error cargando localStorage, reiniciando estado.", e);
-                }
+            // Verificar si el usuario ya se autenticó previamente en esta sesión de navegador
+            const isAuth = sessionStorage.getItem('finanzapp_auth_pro');
+            if (isAuth === 'true') {
+                document.getElementById('login-gate').classList.add('hidden');
+                initFirebaseAuthAndLoad();
             } else {
-                // Cargar datos por defecto de ejemplo para que no se vea vacío inicialmente
-                loadDemoData(true);
+                document.getElementById('login-gate').classList.remove('hidden');
             }
 
-            // Fijar fechas de hoy por defecto en los inputs
+            // Configurar fechas de hoy por defecto en inputs
             const todayStr = new Date().toISOString().split('T')[0];
             document.getElementById('t-date').value = todayStr;
             document.getElementById('d-date').value = todayStr;
             document.getElementById('p-date').value = todayStr;
-
-            renderApp();
         };
 
+        function togglePasswordHint() {
+            const hintDiv = document.getElementById('password-hint');
+            const arrow = document.getElementById('hint-arrow');
+            if (hintDiv.classList.contains('hidden')) {
+                hintDiv.classList.remove('hidden');
+                arrow.classList.add('rotate-180');
+            } else {
+                hintDiv.classList.add('hidden');
+                arrow.classList.remove('rotate-180');
+            }
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const usernameInput = document.getElementById('login-username').value.trim();
+            const passwordInput = document.getElementById('login-password').value;
+
+            // Validación de credenciales locales requeridas
+            if (usernameInput === 'admin' && passwordInput === 'Tavarez26@') {
+                sessionStorage.setItem('finanzapp_auth_pro', 'true');
+                
+                // Animar salida del login gate
+                const gate = document.getElementById('login-gate');
+                gate.classList.add('opacity-0');
+                setTimeout(() => {
+                    gate.classList.add('hidden');
+                }, 350);
+
+                showToast('¡Acceso concedido exitosamente!', 'success');
+                await initFirebaseAuthAndLoad();
+            } else {
+                showToast('Credenciales incorrectas. Inténtalo de nuevo.', 'warning');
+            }
+        }
+
+        async function initFirebaseAuthAndLoad() {
+            // Asegurarnos de que las variables globales y el módulo de Firebase estén listos
+            let checkInterval = setInterval(async () => {
+                if (window.firebaseAuth && window.firebaseDb) {
+                    clearInterval(checkInterval);
+                    try {
+                        // Cumplir REGLA 3: Inicializar Autenticación de Firebase ANTES de cualquier Query
+                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                            await window.signInWithCustomToken(window.firebaseAuth, __initial_auth_token);
+                        } else {
+                            await window.signInAnonymously(window.firebaseAuth);
+                        }
+                    } catch (err) {
+                        console.error("Error al autenticar en Firebase:", err);
+                        // Fallback inmediato offline para resiliencia
+                        loadStateOfflineFallback();
+                    }
+                }
+            }, 50);
+        }
+
+        // --- CARGA DE DATOS DESDE FIRESTORE ---
+        async function loadStateFromFirestore(uid) {
+            try {
+                // REGLA 1: Ruta estricta de datos privados del usuario
+                const docRef = window.firestoreDoc(window.firebaseDb, 'artifacts', window.appId, 'users', uid, 'state', 'globalState');
+                const docSnap = await window.firestoreGetDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    if (data && data.state) {
+                        state = data.state;
+                        console.log("Datos cargados exitosamente desde Firestore Cloud.");
+                        showToast('Datos sincronizados desde la nube.', 'success');
+                    }
+                } else {
+                    console.log("No se encontraron registros en Firestore. Inicializando con respaldo local o demo.");
+                    loadStateOfflineFallback();
+                }
+            } catch (err) {
+                console.error("Error al descargar estado de Firestore:", err);
+                loadStateOfflineFallback();
+            }
+            renderApp(false); // Renderizar sin disparar un guardado inmediato
+        }
+
+        function loadStateOfflineFallback() {
+            const localData = localStorage.getItem('finanzapp_data_pro');
+            if (localData) {
+                try {
+                    state = JSON.parse(localData);
+                    console.log("Sincronizado desde el almacenamiento local de respaldo.");
+                } catch(e) {
+                    console.error("Error leyendo LocalStorage. Cargando demostración.", e);
+                    loadDemoData(true);
+                }
+            } else {
+                loadDemoData(true);
+            }
+        }
+
+        async function logout() {
+            sessionStorage.removeItem('finanzapp_auth_pro');
+            if (window.firebaseAuth) {
+                await window.signOut(window.firebaseAuth);
+            }
+            document.getElementById('login-username').value = '';
+            document.getElementById('login-password').value = '';
+            document.getElementById('login-gate').classList.remove('opacity-0', 'hidden');
+            showToast('Has cerrado tu sesión de forma segura.', 'info');
+        }
+
         // --- RENDERIZADO PRINCIPAL ---
-        function renderApp() {
+        function renderApp(triggerSync = true) {
             renderKpis();
             renderTransactions();
             renderRecurrents();
@@ -660,8 +846,35 @@
             renderBudgetAllocation();
             checkUpcomingDueDates();
             
-            // Persistir datos localmente
+            // Persistir de respaldo local offline siempre
             localStorage.setItem('finanzapp_data_pro', JSON.stringify(state));
+
+            // Sincronizar dinámicamente con Firestore Cloud (con debounce de 1 seg)
+            if (triggerSync) {
+                triggerCloudSync();
+            }
+        }
+
+        // Sincronizador en la nube con debounce para respetar límites de cuota de escritura
+        function triggerCloudSync() {
+            if (saveDebounceTimeout) {
+                clearTimeout(saveDebounceTimeout);
+            }
+            saveDebounceTimeout = setTimeout(async () => {
+                if (window.firebaseAuth && window.firebaseAuth.currentUser) {
+                    try {
+                        const uid = window.firebaseAuth.currentUser.uid;
+                        const docRef = window.firestoreDoc(window.firebaseDb, 'artifacts', window.appId, 'users', uid, 'state', 'globalState');
+                        await window.firestoreSetDoc(docRef, {
+                            state: state,
+                            updatedAt: new Date().toISOString()
+                        });
+                        console.log("Firestore sincronizado con éxito.");
+                    } catch (e) {
+                        console.error("Fallo de sincronización en background en Firestore:", e);
+                    }
+                }
+            }, 1000);
         }
 
         // --- RENDERIZADO DE GASTOS RECURRENTES ---
@@ -820,32 +1033,29 @@
             }
 
             const expenseRatio = allExpenses / totalIncome;
-            const debtRatio = totalDebtRemaining / (totalIncome * 12); // Relación deuda a ingresos anualizados aproximados
+            const debtRatio = totalDebtRemaining / (totalIncome * 12); // Relación de deuda sobre aproximación de ingresos anuales
 
             // Lógica de calificación
             if (remaining > 0 && expenseRatio <= 0.6 && debtRatio < 0.3) {
-                // EXCELENTE (A) - Gasta menos del 60%, deudas bajas en relación al año, balance positivo
                 badge.textContent = "A";
                 badge.className = "w-20 h-20 rounded-2xl flex items-center justify-center text-4xl font-black text-white shadow-lg bg-emerald-500 animate-pulse transition-all";
                 title.className = "text-lg font-bold text-emerald-600 leading-tight";
                 title.textContent = "Salud Óptima [A]";
-                desc.textContent = "¡Increíble! Gastas menos de lo que ganas y tus deudas están controladas. Estás en un gran nivel financiero para ahorrar e invertir.";
+                desc.textContent = "¡Excelente! Gastas menos de lo que ganas y tus deudas están controladas. Tu nivel financiero es idóneo para ahorrar e invertir.";
                 card.style.borderColor = "#10b981";
             } else if (remaining >= 0 && expenseRatio <= 0.85 && debtRatio < 0.6) {
-                // ADVERTENCIA (B) - Balance positivo pero con margen estrecho, o deudas moderadas
                 badge.textContent = "B";
                 badge.className = "w-20 h-20 rounded-2xl flex items-center justify-center text-4xl font-black text-white shadow-lg bg-amber-500 transition-all";
                 title.className = "text-lg font-bold text-amber-600 leading-tight";
                 title.textContent = "Estado de Cuidado [B]";
-                desc.textContent = "Tu caja libre es ajustada. Te recomendamos recortar los gastos no esenciales sugeridos para liberar más flujo de dinero.";
+                desc.textContent = "Tu margen libre es limitado. Es recomendable aplicar recortes en gastos no esenciales para generar mayor flujo monetario.";
                 card.style.borderColor = "#f59e0b";
             } else {
-                // CRÍTICO (C) - Gasta más del 85%, deudas pesadas o balance negativo
                 badge.textContent = "C";
                 badge.className = "w-20 h-20 rounded-2xl flex items-center justify-center text-4xl font-black text-white shadow-lg bg-rose-500 transition-all";
                 title.className = "text-lg font-bold text-rose-600 leading-tight";
                 title.textContent = "Alerta Financiera [C]";
-                desc.textContent = "¡Cuidado! Tus deudas o gastos fijos consumen casi todo tu ingreso mensual. Aplica con urgencia los recortes sugeridos de inmediato.";
+                desc.textContent = "¡Atención! Tus pasivos y gastos de mantenimiento consumen casi todo tu presupuesto. Aplica con premura los recortes sugeridos.";
                 card.style.borderColor = "#f43f5e";
             }
         }
@@ -862,7 +1072,6 @@
                 }
             });
 
-            // Detectar gastos en categorías recortables
             const reducibleCategories = [
                 { id: 'Entretenimiento', name: 'Entretenimiento y Ocio', factor: 0.40, desc: 'Salidas, suscripciones extras y ocio' },
                 { id: 'Compras', name: 'Compras no esenciales', factor: 0.35, desc: 'Ropa, accesorios u caprichos personales' },
@@ -897,7 +1106,7 @@
                 container.className = "mt-3 block";
                 container.innerHTML = `
                     <div class="bg-slate-50 border border-slate-100 p-4 rounded-xl text-center text-slate-500 text-xs">
-                        No hemos detectado gastos altos no esenciales (Entretenimiento o Compras). ¡Estás controlando fantásticamente tus gastos superfluos!
+                        No hemos detectado gastos variables altos no esenciales (Entretenimiento o Compras). ¡Estás controlando fantásticamente tus gastos superfluos!
                     </div>
                 `;
             } else {
@@ -906,7 +1115,7 @@
                     <div class="bg-emerald-50 border border-emerald-100 p-3 rounded-xl flex flex-col justify-between md:col-span-2">
                         <div class="flex items-center space-x-2">
                             <span class="text-xl">💡</span>
-                            <span class="text-xs font-semibold text-emerald-800">Si aplicas todos estos recortes, liberarás un extra mensual estimado de <strong>${formatCurrency(totalEstimatedSavings)}</strong> para pagar más rápido tus deudas.</span>
+                            <span class="text-xs font-semibold text-emerald-800">Si aplicas estos recortes, liberarás un extra mensual estimado de <strong>${formatCurrency(totalEstimatedSavings)}</strong> para inyectarlo en tus deudas prioritarias.</span>
                         </div>
                     </div>
                 `;
@@ -931,10 +1140,8 @@
                 recurrentSum += parseFloat(r.amount);
             });
 
-            // Caja total antes de abonar mínimos a las deudas
             const boxAvailable = Math.max(0, totalIncome - totalExpense - recurrentSum);
             
-            // Mínimos Comprometidos Totales
             const activeDebts = state.debts.filter(d => d.remainingAmount > 0);
             const totalMinNeeded = activeDebts.reduce((sum, d) => sum + parseFloat(d.minPayment), 0);
 
@@ -953,13 +1160,12 @@
             if (boxAvailable < totalMinNeeded) {
                 container.innerHTML = `
                     <div class="bg-rose-950/50 border border-rose-800 p-3 rounded-xl text-xs text-rose-200">
-                        ⚠️ <strong>Déficit de Caja:</strong> Tu dinero disponible este mes (${formatCurrency(boxAvailable)}) es inferior al pago mínimo requerido de tus deudas (${formatCurrency(totalMinNeeded)}). Te recomendamos recortar gastos variables urgentemente o aportar ingresos extra.
+                        ⚠️ <strong>Déficit de Caja:</strong> Tu dinero disponible este mes (${formatCurrency(boxAvailable)}) es inferior al pago mínimo requerido de tus deudas (${formatCurrency(totalMinNeeded)}). Recomendamos disminuir gastos superfluos o inyectar ingresos extra.
                     </div>
                 `;
                 return;
             }
 
-            // Si hay excedente, planificamos la distribución basada en la estrategia activa
             const surplus = boxAvailable - totalMinNeeded;
             let sortedForExtra = [...activeDebts];
 
@@ -970,16 +1176,13 @@
             }
 
             let allocations = sortedForExtra.map((debt, index) => {
-                // Todos reciben el pago mínimo base
                 let recommendedPay = parseFloat(debt.minPayment);
                 
-                // El primer elemento de la estrategia recibe TODO el excedente disponible
                 let isTarget = index === 0 && surplus > 0;
                 if (isTarget) {
                     recommendedPay += surplus;
                 }
 
-                // Ajustar si el pago recomendado supera la deuda total
                 if (recommendedPay > debt.remainingAmount) {
                     recommendedPay = debt.remainingAmount;
                 }
@@ -996,17 +1199,17 @@
                 <div class="flex items-center justify-between p-2 rounded-lg bg-indigo-950/40 border border-indigo-800/30">
                     <div class="min-w-0">
                         <p class="text-xs font-bold text-white truncate">${escapeHTML(alloc.name)}</p>
-                        <p class="text-[10px] text-indigo-300">Pago Base Mínimo: ${formatCurrency(alloc.min)}</p>
+                        <p class="text-[10px] text-indigo-300">Pago Mínimo Requerido: ${formatCurrency(alloc.min)}</p>
                     </div>
                     <div class="text-right">
                         <span class="text-xs font-extrabold text-emerald-400 block">${formatCurrency(alloc.recommended)}</span>
-                        ${alloc.extra > 0 ? `<span class="text-[9px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded font-bold">Abono Extra: +${formatCurrency(alloc.extra)}</span>` : '<span class="text-[9px] text-slate-400">Pago regular</span>'}
+                        ${alloc.extra > 0 ? `<span class="text-[9px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded font-bold">Abono Extra: +${formatCurrency(alloc.extra)}</span>` : '<span class="text-[9px] text-indigo-300/65">Pago regular</span>'}
                     </div>
                 </div>
             `).join('');
 
             container.innerHTML = `
-                <p class="text-[11px] text-indigo-200 mb-2"><strong>Distribución Óptima de Abonos:</strong> Para estar en verde, el sistema asigna el excedente de tu dinero entrado (${formatCurrency(surplus)}) de forma inteligente a la deuda prioritaria:</p>
+                <p class="text-[11px] text-indigo-200 mb-2"><strong>Distribución Óptima de Abonos:</strong> El sistema prioriza tus deudas y asigna todo el excedente disponible (${formatCurrency(surplus)}) de tus ingresos a tu deuda objetivo número uno:</p>
                 <div class="space-y-2">
                     ${listHtml}
                 </div>
@@ -1045,9 +1248,8 @@
                 category: catSelect.value
             };
 
-            state.transactions.unshift(transaction); // agregar al inicio de la lista
+            state.transactions.unshift(transaction);
             
-            // Limpiar inputs
             amountInput.value = '';
             descInput.value = '';
             
@@ -1133,7 +1335,7 @@
                 name: nameInput.value,
                 creditor: creditorInput.value,
                 amount: amount,
-                remainingAmount: amount, // Inicialmente es el total
+                remainingAmount: amount,
                 rate: parseFloat(rateInput.value),
                 minPayment: parseFloat(minInput.value),
                 dueDate: dateInput.value,
@@ -1142,7 +1344,6 @@
 
             state.debts.push(debt);
 
-            // Limpiar formulario y cerrar modal
             document.getElementById('debt-form').reset();
             toggleModal('debt-modal', false);
             showToast('Deuda registrada exitosamente', 'success');
@@ -1184,19 +1385,16 @@
                 return;
             }
 
-            // Realizar pago en la deuda
             debt.remainingAmount = Math.max(0, debt.remainingAmount - paymentAmount);
             debt.payments.push({
                 amount: paymentAmount,
                 date: dateStr
             });
 
-            // Ajustar próxima fecha de vencimiento sumando 1 mes para mantener orden
             const nextDue = new Date(debt.dueDate);
             nextDue.setMonth(nextDue.getMonth() + 1);
             debt.dueDate = nextDue.toISOString().split('T')[0];
 
-            // Si se marcó auto-gasto, se añade una transacción de tipo gasto
             if (autoExpense) {
                 const autoTx = {
                     id: crypto.randomUUID(),
@@ -1240,7 +1438,6 @@
             container.innerHTML = state.debts.map(d => {
                 const percentage = Math.round(((d.amount - d.remainingAmount) / d.amount) * 100) || 0;
                 
-                // Calcular días para vencimiento
                 const daysLeft = getDaysRemaining(d.dueDate);
                 let badgeColor = '';
                 let badgeText = '';
@@ -1260,7 +1457,7 @@
                 }
 
                 return `
-                    <div class="border border-slate-150 rounded-2xl p-5 hover:shadow-md transition-all bg-white">
+                    <div class="border border-slate-155 rounded-2xl p-5 hover:shadow-md transition-all bg-white">
                         <!-- Cabecera de Deuda -->
                         <div class="flex justify-between items-start gap-3">
                             <div>
@@ -1351,13 +1548,11 @@
             }
 
             renderStrategyRecommendation();
-            renderBudgetAllocation(); // Actualizar el asignador de abonos también
+            renderBudgetAllocation();
         }
 
         function renderStrategyRecommendation() {
             const container = document.getElementById('strategy-info');
-            
-            // Filtrar deudas activas (con saldo pendiente)
             const activeDebts = state.debts.filter(d => d.remainingAmount > 0);
 
             if (activeDebts.length === 0) {
@@ -1373,11 +1568,9 @@
             let explanation = "";
 
             if (state.activeStrategy === 'snowball') {
-                // Ordenar de menor saldo a mayor saldo
                 sortedDebts.sort((a, b) => a.remainingAmount - b.remainingAmount);
                 explanation = `El método <strong>Bola de Nieve</strong> prioriza liquidar primero tus saldos más pequeños, sin importar el interés. Esto te da "victorias psicológicas" rápidas que te motivan a seguir pagando.`;
             } else {
-                // Ordenar de mayor interés a menor interés
                 sortedDebts.sort((a, b) => b.rate - a.rate);
                 explanation = `El método <strong>Avalancha</strong> prioriza liquidar las deudas que te cobran la tasa de interés más alta. Matemáticamente, este método es el que te hace ahorrar la mayor cantidad de dinero en intereses totales.`;
             }
@@ -1412,7 +1605,7 @@
                     <h4 class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider mb-2">Orden Recomendado de Pago:</h4>
                     ${orderListHtml}
                 </div>
-                <p class="text-[10px] text-slate-400 mt-3 italic">**Instrucciones: Continúa haciendo los pagos mínimos mensuales de todas tus deudas y destina cualquier dinero extra disponible únicamente a tu deuda objetivo número 1 (la primera de la lista) hasta liquidarla por completo.</p>
+                <p class="text-[10px] text-slate-400 mt-3 italic">**Instrucciones: Continúa haciendo los pagos mínimos de todas tus deudas y destina cualquier dinero extra disponible únicamente a tu deuda objetivo número 1 (la primera de la lista) hasta liquidarla.</p>
             `;
         }
 
@@ -1424,13 +1617,13 @@
             const upcoming = state.debts.filter(d => {
                 if (d.remainingAmount === 0) return false;
                 const days = getDaysRemaining(d.dueDate);
-                return days >= 0 && days <= 7; // Próximos 7 días
+                return days >= 0 && days <= 7;
             });
 
             const overdue = state.debts.filter(d => {
                 if (d.remainingAmount === 0) return false;
                 const days = getDaysRemaining(d.dueDate);
-                return days < 0; // Vencido
+                return days < 0;
             });
 
             if (overdue.length > 0) {
@@ -1459,7 +1652,6 @@
 
             let csvContent = "data:text/csv;charset=utf-8,";
             
-            // SECCIÓN 1: TRANSACCIONES
             csvContent += "REGISTRO DE TRANSACCIONES (BALANCE)\n";
             csvContent += "Fecha,Tipo,Monto,Descripcion,Categoria\n";
             state.transactions.forEach(t => {
@@ -1470,7 +1662,6 @@
 
             csvContent += "\n\n";
 
-            // SECCIÓN 2: GASTOS RECURRENTES
             csvContent += "GASTOS FIJOS RECURRENTES\n";
             csvContent += "Nombre Gasto,Monto Mensual,Dia Cobro,Categoria\n";
             state.recurrents.forEach(r => {
@@ -1481,7 +1672,6 @@
 
             csvContent += "\n\n";
 
-            // SECCIÓN 3: DEUDAS
             csvContent += "REGISTRO Y SEGUIMIENTO DE DEUDAS\n";
             csvContent += "Deuda,Acreedor,Monto Inicial,Saldo Pendiente,Tasa Interes (%),Pago Minimo,Fecha Vencimiento\n";
             state.debts.forEach(d => {
@@ -1490,7 +1680,6 @@
                 csvContent += `${nameCleaned},${creditorCleaned},${d.amount},${d.remainingAmount},${d.rate},${d.minPayment},${d.dueDate}\n`;
             });
 
-            // Descarga de archivo
             const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
             link.setAttribute("href", encodedUri);
@@ -1548,7 +1737,7 @@
                     remainingAmount: 350.00,
                     rate: 35.0,
                     minPayment: 60.00,
-                    dueDate: getOffsetDate(-2), // Vencida
+                    dueDate: getOffsetDate(-2),
                     payments: []
                 }
             ];
@@ -1573,7 +1762,7 @@
                     transactionFormType: 'income'
                 };
                 renderApp();
-                showToast('Todos los datos han sido borrados de tu navegador.', 'info');
+                showToast('Todos los datos han sido borrados de tu navegador y en la nube.', 'info');
             }
         }
 
@@ -1616,7 +1805,6 @@
             );
         }
 
-        // Manejo de Modales con animaciones suaves
         function toggleModal(id, show) {
             const modal = document.getElementById(id);
             const card = document.getElementById(`${id}-card`);
@@ -1642,7 +1830,6 @@
             }
         }
 
-        // Toast Notifications
         function showToast(msg, type = 'info') {
             const toast = document.getElementById('toast');
             const toastMsg = document.getElementById('toast-message');
@@ -1650,7 +1837,6 @@
 
             toastMsg.textContent = msg;
 
-            // Ajustar iconos según tipo
             if (type === 'success') {
                 toastIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>`;
             } else if (type === 'warning') {
@@ -1659,11 +1845,9 @@
                 toastIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`;
             }
 
-            // Animar entrada
             toast.classList.remove('translate-y-20', 'opacity-0');
             toast.classList.add('translate-y-0', 'opacity-100');
 
-            // Salida automática
             setTimeout(() => {
                 toast.classList.remove('translate-y-0', 'opacity-100');
                 toast.classList.add('translate-y-20', 'opacity-0');
