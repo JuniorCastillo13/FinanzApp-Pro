@@ -1,0 +1,1674 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinanzApp Pro - Control Inteligente de Finanzas, Deudas y Salud Financiera</title>
+    <!-- Tailwind CSS para diseño moderno -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter para tipografía limpia -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Personalización de scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- Encabezado / Barra de Navegación -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-emerald-600 text-white p-2 rounded-xl shadow-md shadow-emerald-200">
+                        <!-- Icono SVG de Finanzas -->
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold text-slate-900 tracking-tight">FinanzApp Pro</h1>
+                        <p class="text-xs text-slate-500">Gestor de Finanzas, Recortes & Salud Financiera</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-2 sm:space-x-4">
+                    <button onclick="exportToExcel()" class="flex items-center space-x-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 px-3 py-2 rounded-lg text-sm font-semibold border border-emerald-200 transition-all">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        <span class="hidden sm:inline">Exportar a Excel (CSV)</span>
+                        <span class="sm:hidden">Excel</span>
+                    </button>
+                    <button onclick="loadDemoData()" class="text-slate-500 hover:text-slate-800 text-xs px-2 py-1 hover:bg-slate-100 rounded transition-all">
+                        Cargar Demo
+                    </button>
+                    <button onclick="resetAllData()" class="text-rose-500 hover:text-rose-700 text-xs px-2 py-1 hover:bg-rose-50 rounded transition-all">
+                        Limpiar Todo
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Alert/Notification Toast System -->
+    <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+        <div class="bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl flex items-center space-x-3 border border-slate-700">
+            <span id="toast-icon" class="text-emerald-400">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+            </span>
+            <p id="toast-message" class="text-sm font-medium"></p>
+        </div>
+    </div>
+
+    <!-- Contenedor Principal -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- SECCIÓN SUPERIOR: Diagnóstico de Salud Financiera & Alertas -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
+            
+            <!-- TARJETA: Indicador Semáforo de Salud Financiera con Letras (A, B, C) -->
+            <div id="health-card" class="lg:col-span-4 bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex flex-col justify-between transition-all duration-300">
+                <div>
+                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-2">Tu Salud Financiera</span>
+                    <div class="flex items-center space-x-4">
+                        <!-- El círculo grande con la letra (A, B, C) -->
+                        <div id="health-badge" class="w-20 h-20 rounded-2xl flex items-center justify-center text-4xl font-black text-white shadow-lg transition-all duration-300">
+                            -
+                        </div>
+                        <div>
+                            <h3 id="health-status-title" class="text-lg font-bold text-slate-900 leading-tight">Calculando...</h3>
+                            <p id="health-status-desc" class="text-xs text-slate-500 mt-1">Ingresa tus primeros movimientos o deudas para evaluar tu salud actual.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
+                    <span class="text-xs text-slate-400">Escala de Salud:</span>
+                    <div class="flex space-x-2">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500 text-white" title="Excelente">A</span>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500 text-white" title="Estable / Atención">B</span>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500 text-white" title="Alerta / Crítico">C</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TARJETA: Motor de Sugerencias y Recortes de Gasto -->
+            <div class="lg:col-span-8 bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex flex-col justify-between">
+                <div>
+                    <h3 class="text-sm font-bold text-slate-950 uppercase tracking-wider flex items-center space-x-1">
+                        <span class="text-emerald-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                        </span>
+                        <span>Sugerencias de Recorte & Ahorro para Pagar Deudas</span>
+                    </h3>
+                    <div id="reduction-recommendations" class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <!-- Cargar dinámicamente las recomendaciones de ahorro basadas en transacciones -->
+                    </div>
+                </div>
+                <div class="text-[11px] text-slate-400 mt-3 md:mt-0 italic flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    El sistema detecta tus gastos no esenciales y te dice cuánto podrías rescatar para tus deudas.
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Alerta de Resumen / Próximos Pagos de Deuda -->
+        <div id="alert-zone" class="mb-6 hidden">
+            <div class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-xl shadow-sm flex items-start space-x-3">
+                <div class="flex-shrink-0 text-amber-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                </div>
+                <div class="flex-1">
+                    <h3 class="text-sm font-semibold text-amber-800">Planificador de Vencimientos</h3>
+                    <p class="text-xs text-amber-700 mt-1" id="alert-text">Calculando alertas de vencimiento...</p>
+                </div>
+                <button onclick="closeAlert()" class="text-amber-500 hover:text-amber-800">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Fila de Tarjetas de Balance Resumen (Kpis) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            
+            <!-- Tarjeta: Balance Total en Caja -->
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+                <div>
+                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Caja Libre del Mes</span>
+                    <h3 id="balance-total" class="text-2xl font-bold text-slate-900 mt-1">$0.00</h3>
+                    <p class="text-xs text-slate-500 mt-1">Ingresos menos gastos y recurrentes</p>
+                </div>
+                <div class="bg-blue-50 text-blue-600 p-3 rounded-xl">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Tarjeta: Ingresos del Mes -->
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+                <div>
+                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Ingresos Entrados</span>
+                    <h3 id="income-total" class="text-2xl font-bold text-emerald-600 mt-1">$0.00</h3>
+                    <p class="text-xs text-slate-500 mt-1" id="income-count">0 transacciones</p>
+                </div>
+                <div class="bg-emerald-50 text-emerald-600 p-3 rounded-xl">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Tarjeta: Total de Gastos (Variables + Recurrentes) -->
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+                <div>
+                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Gastos Totales</span>
+                    <h3 id="expense-total" class="text-2xl font-bold text-rose-600 mt-1">$0.00</h3>
+                    <p class="text-xs text-slate-500 mt-1" id="expense-count">0 transacciones</p>
+                </div>
+                <div class="bg-rose-50 text-rose-600 p-3 rounded-xl">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Tarjeta: Deuda Total Pendiente (Préstamos y Tarjetas de Crédito) -->
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+                <div>
+                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Deudas por Reducir</span>
+                    <h3 id="debt-total" class="text-2xl font-bold text-amber-600 mt-1">$0.00</h3>
+                    <p class="text-xs text-slate-500 mt-1" id="debt-count">0 deudas registradas</p>
+                </div>
+                <div class="bg-amber-50 text-amber-600 p-3 rounded-xl">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Panel Principal Dividido: Finanzas vs Deudas -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- SECCIÓN IZQUIERDA: Transacciones e Ingresos/Gastos + Gastos Recurrentes (Col: 5) -->
+            <div class="lg:col-span-5 space-y-6">
+                
+                <!-- Añadir Transacción -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center">
+                        <span class="bg-indigo-50 text-indigo-600 p-1.5 rounded-lg mr-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </span>
+                        Agregar Transacción
+                    </h2>
+                    
+                    <form id="transaction-form" onsubmit="handleTransactionSubmit(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 mb-1">Tipo de Transacción</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button type="button" onclick="setTransactionType('income')" id="btn-type-income" class="py-2.5 rounded-xl border-2 text-sm font-semibold text-center transition-all bg-emerald-50 border-emerald-500 text-emerald-700">
+                                    Ingreso (+)
+                                </button>
+                                <button type="button" onclick="setTransactionType('expense')" id="btn-type-expense" class="py-2.5 rounded-xl border-2 text-sm font-semibold text-center transition-all bg-white border-slate-200 text-slate-600 hover:bg-slate-50">
+                                    Gasto (-)
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label for="t-amount" class="block text-xs font-semibold text-slate-500 mb-1">Monto ($)</label>
+                                <input type="number" id="t-amount" step="0.01" required placeholder="0.00" class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm">
+                            </div>
+                            <div>
+                                <label for="t-date" class="block text-xs font-semibold text-slate-500 mb-1">Fecha</label>
+                                <input type="date" id="t-date" required class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="t-desc" class="block text-xs font-semibold text-slate-500 mb-1">Descripción / Concepto</label>
+                            <input type="text" id="t-desc" required placeholder="Ej. Pago Quincena, Compra Supermercado" class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm">
+                        </div>
+
+                        <div>
+                            <label for="t-category" class="block text-xs font-semibold text-slate-500 mb-1">Categoría</label>
+                            <select id="t-category" class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm">
+                                <option value="Salario">Salario / Ingresos Extra</option>
+                                <option value="Alimentos">Alimentos / Despensa</option>
+                                <option value="Entretenimiento">Entretenimiento / Salidas / Ocio</option>
+                                <option value="Transporte">Transporte / Combustible / Uber</option>
+                                <option value="Salud">Salud / Seguros / Farmacia</option>
+                                <option value="Compras">Compras / Ropa / Tecnología (No esencial)</option>
+                                <option value="Otro">Otro</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="w-full bg-slate-950 hover:bg-slate-800 text-white font-semibold text-sm py-2.5 rounded-xl transition-all shadow-md shadow-slate-200">
+                            Registrar Movimiento
+                        </button>
+                    </form>
+                </div>
+
+                <!-- SECCIÓN DE GASTOS RECURRENTES (Internet, luz, teléfono, etc.) -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-bold text-slate-900 flex items-center">
+                            <span class="bg-amber-50 text-amber-600 p-1.5 rounded-lg mr-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                </svg>
+                            </span>
+                            Gastos Recurrentes / Fijos
+                        </h2>
+                        <button onclick="toggleModal('recurrent-modal', true)" class="text-indigo-600 hover:text-indigo-800 text-xs font-bold flex items-center space-x-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                            </svg>
+                            <span>Añadir</span>
+                        </button>
+                    </div>
+                    
+                    <p class="text-xs text-slate-400 mb-4">Estos gastos fijos se restan de manera automática para estimar tu saldo real libre disponible para el pago de deudas.</p>
+
+                    <div class="space-y-2 max-h-[250px] overflow-y-auto" id="recurrents-container">
+                        <!-- Renderizado dinámico de gastos fijos -->
+                    </div>
+                </div>
+
+                <!-- Listado de Transacciones Recientes -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-bold text-slate-900 flex items-center">
+                            <span class="bg-slate-50 text-slate-600 p-1.5 rounded-lg mr-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                                </svg>
+                            </span>
+                            Últimos Movimientos
+                        </h2>
+                        <span id="transaction-badge-count" class="bg-slate-100 text-slate-600 text-xs font-semibold px-2 py-0.5 rounded-full">0</span>
+                    </div>
+
+                    <div class="overflow-y-auto max-h-[350px] space-y-3" id="transactions-container">
+                        <!-- Estado vacío por defecto -->
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- SECCIÓN DERECHA: Control de Deudas & Recomendación de Pagos en Base a Ingresos (Col: 7) -->
+            <div class="lg:col-span-7 space-y-6">
+                
+                <!-- SECCIÓN: Planificador de Pago Inteligente con Excedente de Ingreso Reales -->
+                <div class="bg-indigo-900 text-white p-6 rounded-3xl shadow-lg relative overflow-hidden">
+                    <!-- Decoración fondo -->
+                    <div class="absolute -right-16 -bottom-16 w-44 h-44 bg-indigo-800 rounded-full opacity-30 pointer-events-none"></div>
+                    <div class="absolute -left-16 -top-16 w-44 h-44 bg-indigo-800 rounded-full opacity-30 pointer-events-none"></div>
+                    
+                    <div class="relative z-10">
+                        <span class="bg-indigo-800 text-indigo-300 text-[10px] uppercase font-bold tracking-widest px-3 py-1 rounded-full">
+                            Motor de Optimización FinanzApp
+                        </span>
+                        
+                        <h2 class="text-xl font-extrabold mt-3 tracking-tight">Presupuesto de Amortización Automático</h2>
+                        <p class="text-xs text-indigo-200 mt-1">Calculado en función del dinero real que ha entrado este mes después de cubrir tus deudas con pago mínimo y tus gastos fijos recurrentes.</p>
+                        
+                        <div class="grid grid-cols-2 gap-4 mt-6 p-4 bg-indigo-950/60 rounded-2xl border border-indigo-700/50">
+                            <div>
+                                <span class="text-[10px] text-indigo-300 uppercase font-bold tracking-wider block">Caja Disponible Real</span>
+                                <span id="payment-box-available" class="text-2xl font-extrabold text-emerald-400">$0.00</span>
+                            </div>
+                            <div>
+                                <span class="text-[10px] text-indigo-300 uppercase font-bold tracking-wider block">Próximos Mínimos Comprometidos</span>
+                                <span id="payment-box-committed" class="text-2xl font-extrabold text-amber-400">$0.00</span>
+                            </div>
+                        </div>
+
+                        <div id="payment-box-allocation-container" class="mt-6 space-y-3">
+                            <!-- Recomendación automática de distribución de abonos según ingresos de caja -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección de Deudas e Indicadores de Pago -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6">
+                        <div>
+                            <h2 class="text-lg font-bold text-slate-900 flex items-center">
+                                <span class="bg-amber-50 text-amber-600 p-1.5 rounded-lg mr-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                    </svg>
+                                </span>
+                                Planificador de Pago de Deudas
+                            </h2>
+                            <p class="text-xs text-slate-500">Administra tus préstamos y tarjetas de crédito para disminuirlos de forma acelerada</p>
+                        </div>
+                        <button onclick="toggleModal('debt-modal', true)" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-4 py-2 rounded-xl transition-all flex items-center space-x-1.5 self-start">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                            </svg>
+                            <span>Registrar Deuda</span>
+                        </button>
+                    </div>
+
+                    <!-- Lista de Deudas Dinámicas -->
+                    <div class="space-y-4" id="debts-container">
+                        <!-- Se llena dinámicamente -->
+                    </div>
+                </div>
+
+                <!-- Bloque Inteligente: Recomendación de Estrategia de Pago -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <h3 class="text-md font-bold text-slate-900 mb-2 flex items-center">
+                        <span class="bg-indigo-50 text-indigo-600 p-1.5 rounded-lg mr-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                        </span>
+                        Simulador de Estrategia de Liquidación
+                    </h3>
+                    <p class="text-xs text-slate-500 mb-4">Descubre el orden recomendado para pagar tus deudas prioritariamente para quedar totalmente en verde:</p>
+
+                    <!-- Tabs de Métodos -->
+                    <div class="flex border-b border-slate-100 mb-4">
+                        <button onclick="changeStrategy('snowball')" id="btn-strategy-snowball" class="border-b-2 border-indigo-600 text-indigo-600 py-2 px-4 text-xs font-bold transition-all">
+                            Método Bola de Nieve (Menor saldo primero)
+                        </button>
+                        <button onclick="changeStrategy('avalanche')" id="btn-strategy-avalanche" class="border-b-2 border-transparent text-slate-400 hover:text-slate-600 py-2 px-4 text-xs font-bold transition-all">
+                            Método Avalancha (Mayor Interés primero)
+                        </button>
+                    </div>
+
+                    <!-- Detalles del Método -->
+                    <div id="strategy-info" class="bg-slate-50 p-4 rounded-xl">
+                        <!-- Renderizado dinámico -->
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- MODAL PARA REGISTRAR GASTO RECURRENTE (NUEVO) -->
+    <div id="recurrent-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full mx-4 shadow-2xl relative transform scale-95 transition-transform duration-300" id="recurrent-modal-card">
+            <button onclick="toggleModal('recurrent-modal', false)" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+            
+            <h2 class="text-xl font-bold text-slate-900 mb-1 flex items-center">
+                <span class="bg-indigo-50 text-indigo-600 p-2 rounded-xl mr-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                </span>
+                Nuevo Gasto Recurrente
+            </h2>
+            <p class="text-xs text-slate-500 mb-6">Agrega un gasto que se repita mensualmente como luz, internet o teléfono fijos.</p>
+
+            <form id="recurrent-form" onsubmit="handleRecurrentSubmit(event)" class="space-y-4">
+                <div>
+                    <label for="r-name" class="block text-xs font-semibold text-slate-500 mb-1">Nombre del Gasto</label>
+                    <input type="text" id="r-name" required placeholder="Ej. Luz Enel, Internet Fibra, Netflix" class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label for="r-amount" class="block text-xs font-semibold text-slate-500 mb-1">Monto Mensual ($)</label>
+                        <input type="number" id="r-amount" step="0.01" required placeholder="0.00" class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
+                    </div>
+                    <div>
+                        <label for="r-day" class="block text-xs font-semibold text-slate-500 mb-1">Día de Facturación</label>
+                        <input type="number" id="r-day" min="1" max="31" required placeholder="Ej. 10" class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="r-category" class="block text-xs font-semibold text-slate-500 mb-1">Categoría</label>
+                    <select id="r-category" class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
+                        <option value="Servicios">Servicios Básicos (Luz, Agua, Gas)</option>
+                        <option value="Telecomunicaciones">Telecomunicaciones (Internet, Teléfono, Plan Móvil)</option>
+                        <option value="Suscripciones">Suscripciones / Entretenimiento</option>
+                        <option value="Vivienda">Vivienda (Arriendo, Expensas)</option>
+                        <option value="Otro">Otro Recurrente</option>
+                    </select>
+                </div>
+
+                <div class="pt-4 flex space-x-3">
+                    <button type="button" onclick="toggleModal('recurrent-modal', false)" class="w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm py-2.5 rounded-xl transition-all">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="w-1/2 bg-slate-950 hover:bg-slate-850 text-white font-semibold text-sm py-2.5 rounded-xl transition-all shadow-md">
+                        Guardar Gasto
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL PARA REGISTRAR DEUDAS -->
+    <div id="debt-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full mx-4 shadow-2xl relative transform scale-95 transition-transform duration-300" id="debt-modal-card">
+            <button onclick="toggleModal('debt-modal', false)" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+            
+            <h2 class="text-xl font-bold text-slate-900 mb-1 flex items-center">
+                <span class="bg-amber-50 text-amber-600 p-2 rounded-xl mr-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                </span>
+                Nueva Deuda (Préstamo o Tarjeta)
+            </h2>
+            <p class="text-xs text-slate-500 mb-6">Detalla las características de tu deuda para calcular sus planes de pago automáticos.</p>
+
+            <form id="debt-form" onsubmit="handleDebtSubmit(event)" class="space-y-4">
+                <div>
+                    <label for="d-name" class="block text-xs font-semibold text-slate-500 mb-1">Nombre de la Deuda</label>
+                    <input type="text" id="d-name" required placeholder="Ej. Tarjeta de Crédito, Préstamo Coche" class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm">
+                </div>
+
+                <div>
+                    <label for="d-creditor" class="block text-xs font-semibold text-slate-500 mb-1">Acreedor / Entidad</label>
+                    <input type="text" id="d-creditor" required placeholder="Ej. Banco Nacional, Financiera X" class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label for="d-amount" class="block text-xs font-semibold text-slate-500 mb-1">Monto Inicial ($)</label>
+                        <input type="number" id="d-amount" step="0.01" required placeholder="0.00" class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm">
+                    </div>
+                    <div>
+                        <label for="d-rate" class="block text-xs font-semibold text-slate-500 mb-1">Interés Anual (%)</label>
+                        <input type="number" id="d-rate" step="0.01" required placeholder="Ej. 18.5" class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label for="d-min" class="block text-xs font-semibold text-slate-500 mb-1">Pago Mínimo Mensual ($)</label>
+                        <input type="number" id="d-min" step="0.01" required placeholder="0.00" class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm">
+                    </div>
+                    <div>
+                        <label for="d-date" class="block text-xs font-semibold text-slate-500 mb-1">Próxima Fecha de Pago</label>
+                        <input type="date" id="d-date" required class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm">
+                    </div>
+                </div>
+
+                <div class="pt-4 flex space-x-3">
+                    <button type="button" onclick="toggleModal('debt-modal', false)" class="w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm py-2.5 rounded-xl transition-all">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="w-1/2 bg-slate-950 hover:bg-slate-850 text-white font-semibold text-sm py-2.5 rounded-xl transition-all shadow-md shadow-slate-200">
+                        Guardar Deuda
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL PARA REGISTRAR PAGO A UNA DEUDA -->
+    <div id="payment-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full mx-4 shadow-2xl relative transform scale-95 transition-transform duration-300" id="payment-modal-card">
+            <button onclick="toggleModal('payment-modal', false)" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+            
+            <h2 class="text-xl font-bold text-slate-900 mb-1 flex items-center">
+                <span class="bg-emerald-50 text-emerald-600 p-2 rounded-xl mr-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4" />
+                    </svg>
+                </span>
+                Registrar Pago de Deuda
+            </h2>
+            <p class="text-xs text-slate-500 mb-6">Abona un pago y actualiza el saldo de tu deuda de manera inmediata.</p>
+
+            <form id="payment-form" onsubmit="handlePaymentSubmit(event)" class="space-y-4">
+                <input type="hidden" id="p-debt-id">
+                
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">Deuda seleccionada</label>
+                    <p id="p-debt-name" class="text-sm font-bold text-slate-800 bg-slate-50 p-2.5 rounded-lg border border-slate-150"></p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label for="p-amount" class="block text-xs font-semibold text-slate-500 mb-1">Monto del Abono ($)</label>
+                        <input type="number" id="p-amount" step="0.01" required placeholder="0.00" class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm">
+                        <span id="p-amount-max" class="text-[10px] text-slate-400 block mt-1">Saldo restante: $0.00</span>
+                    </div>
+                    <div>
+                        <label for="p-date" class="block text-xs font-semibold text-slate-500 mb-1">Fecha del Pago</label>
+                        <input type="date" id="p-date" required class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm">
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-2 bg-indigo-50/50 p-3 rounded-xl border border-indigo-100">
+                    <input type="checkbox" id="p-auto-expense" checked class="rounded border-indigo-300 text-indigo-600 focus:ring-indigo-500">
+                    <label for="p-auto-expense" class="text-xs text-indigo-800 leading-tight">Registrar automáticamente este pago como un GASTO en mi lista de movimientos de balance.</label>
+                </div>
+
+                <div class="pt-4 flex space-x-3">
+                    <button type="button" onclick="toggleModal('payment-modal', false)" class="w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm py-2.5 rounded-xl transition-all">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="w-1/2 bg-slate-950 hover:bg-slate-850 text-white font-semibold text-sm py-2.5 rounded-xl transition-all shadow-md shadow-slate-200">
+                        Aplicar Pago
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 mt-12 py-6">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <p class="text-xs text-slate-400">© 2026 FinanzApp Pro. Organiza tus finanzas, erradica tus deudas de forma inteligente.</p>
+            <div class="flex space-x-6">
+                <span class="text-xs text-emerald-600 font-semibold flex items-center">
+                    <span class="h-2 w-2 rounded-full bg-emerald-500 inline-block mr-1.5 animate-pulse"></span>
+                    Toda tu información está segura localmente
+                </span>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // --- VARIABLES DE ESTADO ---
+        let state = {
+            transactions: [],
+            debts: [],
+            recurrents: [], // Nuevo estado para gastos fijos recurrentes
+            activeStrategy: 'snowball', // 'snowball' o 'avalanche'
+            transactionFormType: 'income' // 'income' o 'expense'
+        };
+
+        // --- INICIALIZACIÓN DE LA APLICACIÓN ---
+        window.onload = function() {
+            // Cargar datos persistidos o inicializar vacíos
+            const localData = localStorage.getItem('finanzapp_data_pro');
+            if (localData) {
+                try {
+                    state = JSON.parse(localData);
+                } catch(e) {
+                    console.error("Error cargando localStorage, reiniciando estado.", e);
+                }
+            } else {
+                // Cargar datos por defecto de ejemplo para que no se vea vacío inicialmente
+                loadDemoData(true);
+            }
+
+            // Fijar fechas de hoy por defecto en los inputs
+            const todayStr = new Date().toISOString().split('T')[0];
+            document.getElementById('t-date').value = todayStr;
+            document.getElementById('d-date').value = todayStr;
+            document.getElementById('p-date').value = todayStr;
+
+            renderApp();
+        };
+
+        // --- RENDERIZADO PRINCIPAL ---
+        function renderApp() {
+            renderKpis();
+            renderTransactions();
+            renderRecurrents();
+            renderDebts();
+            renderStrategyRecommendation();
+            renderHealthIndicator();
+            renderReductionRecommendations();
+            renderBudgetAllocation();
+            checkUpcomingDueDates();
+            
+            // Persistir datos localmente
+            localStorage.setItem('finanzapp_data_pro', JSON.stringify(state));
+        }
+
+        // --- RENDERIZADO DE GASTOS RECURRENTES ---
+        function handleRecurrentSubmit(e) {
+            e.preventDefault();
+            const nameInput = document.getElementById('r-name');
+            const amountInput = document.getElementById('r-amount');
+            const dayInput = document.getElementById('r-day');
+            const catSelect = document.getElementById('r-category');
+
+            const recurrent = {
+                id: crypto.randomUUID(),
+                name: nameInput.value,
+                amount: parseFloat(amountInput.value),
+                day: parseInt(dayInput.value),
+                category: catSelect.value
+            };
+
+            state.recurrents.push(recurrent);
+            document.getElementById('recurrent-form').reset();
+            toggleModal('recurrent-modal', false);
+            showToast('Gasto recurrente agregado con éxito', 'success');
+            renderApp();
+        }
+
+        function deleteRecurrent(id) {
+            state.recurrents = state.recurrents.filter(r => r.id !== id);
+            showToast('Gasto recurrente eliminado', 'info');
+            renderApp();
+        }
+
+        function renderRecurrents() {
+            const container = document.getElementById('recurrents-container');
+            if (!container) return;
+
+            if (state.recurrents.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-4 text-slate-400 bg-slate-50 rounded-xl border border-dashed border-slate-100">
+                        <p class="text-xs">No hay gastos fijos configurados.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = state.recurrents.map(r => `
+                <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100 hover:border-slate-200 transition-all">
+                    <div class="flex items-center space-x-2.5 min-w-0">
+                        <div class="bg-indigo-50 text-indigo-600 p-2 rounded-lg flex-shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                        </div>
+                        <div class="min-w-0">
+                            <h4 class="text-xs font-bold text-slate-800 truncate">${escapeHTML(r.name)}</h4>
+                            <p class="text-[10px] text-slate-400">Día de cobro: ${r.day} | ${escapeHTML(r.category)}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-xs font-bold text-slate-700">${formatCurrency(r.amount)}</span>
+                        <button onclick="deleteRecurrent('${r.id}')" class="text-slate-300 hover:text-rose-500 p-1" title="Eliminar">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // --- KPI RENDER LOGIC ---
+        function renderKpis() {
+            let totalIncome = 0;
+            let totalExpense = 0;
+            let incomeCount = 0;
+            let expenseCount = 0;
+
+            state.transactions.forEach(t => {
+                if (t.type === 'income') {
+                    totalIncome += parseFloat(t.amount);
+                    incomeCount++;
+                } else if (t.type === 'expense') {
+                    totalExpense += parseFloat(t.amount);
+                    expenseCount++;
+                }
+            });
+
+            // Sumar también los gastos fijos recurrentes al total de gastos
+            let recurrentSum = 0;
+            state.recurrents.forEach(r => {
+                recurrentSum += parseFloat(r.amount);
+            });
+
+            // Deudas pendientes
+            let totalDebtRemaining = 0;
+            state.debts.forEach(d => {
+                totalDebtRemaining += parseFloat(d.remainingAmount || d.amount);
+            });
+
+            const currentBalance = totalIncome - totalExpense - recurrentSum;
+
+            // Formatear monedas
+            document.getElementById('balance-total').textContent = formatCurrency(currentBalance);
+            document.getElementById('income-total').textContent = formatCurrency(totalIncome);
+            document.getElementById('expense-total').textContent = formatCurrency(totalExpense + recurrentSum);
+            document.getElementById('debt-total').textContent = formatCurrency(totalDebtRemaining);
+
+            // Ajustar clases de color según balance positivo/negativo
+            const balContainer = document.getElementById('balance-total');
+            if (currentBalance >= 0) {
+                balContainer.className = "text-2xl font-bold text-slate-900 mt-1";
+            } else {
+                balContainer.className = "text-2xl font-bold text-rose-600 mt-1";
+            }
+
+            // Textos pequeños
+            document.getElementById('income-count').textContent = `${incomeCount} transacción${incomeCount !== 1 ? 'es' : ''}`;
+            document.getElementById('expense-count').textContent = `${expenseCount + state.recurrents.length} total de transacciones & recurrentes`;
+            document.getElementById('debt-count').textContent = `${state.debts.length} deudas por disminuir`;
+        }
+
+        // --- INDICADOR SEMÁFORO DE SALUD FINANCIERA (A, B, C) ---
+        function renderHealthIndicator() {
+            const badge = document.getElementById('health-badge');
+            const title = document.getElementById('health-status-title');
+            const desc = document.getElementById('health-status-desc');
+            const card = document.getElementById('health-card');
+
+            let totalIncome = 0;
+            let totalExpense = 0;
+
+            state.transactions.forEach(t => {
+                if (t.type === 'income') totalIncome += parseFloat(t.amount);
+                if (t.type === 'expense') totalExpense += parseFloat(t.amount);
+            });
+
+            let recurrentSum = 0;
+            state.recurrents.forEach(r => {
+                recurrentSum += parseFloat(r.amount);
+            });
+
+            const allExpenses = totalExpense + recurrentSum;
+            const remaining = totalIncome - allExpenses;
+
+            let totalDebtRemaining = 0;
+            state.debts.forEach(d => {
+                totalDebtRemaining += parseFloat(d.remainingAmount);
+            });
+
+            if (totalIncome === 0) {
+                badge.textContent = "-";
+                badge.className = "w-20 h-20 rounded-2xl flex items-center justify-center text-4xl font-black text-white shadow-lg bg-slate-300 transition-all";
+                title.textContent = "Sin ingresos registrados";
+                desc.textContent = "Registra tus ingresos de salario o extras mensuales para diagnosticar tu nivel de salud financiera.";
+                card.style.borderColor = "#cbd5e1";
+                return;
+            }
+
+            const expenseRatio = allExpenses / totalIncome;
+            const debtRatio = totalDebtRemaining / (totalIncome * 12); // Relación deuda a ingresos anualizados aproximados
+
+            // Lógica de calificación
+            if (remaining > 0 && expenseRatio <= 0.6 && debtRatio < 0.3) {
+                // EXCELENTE (A) - Gasta menos del 60%, deudas bajas en relación al año, balance positivo
+                badge.textContent = "A";
+                badge.className = "w-20 h-20 rounded-2xl flex items-center justify-center text-4xl font-black text-white shadow-lg bg-emerald-500 animate-pulse transition-all";
+                title.className = "text-lg font-bold text-emerald-600 leading-tight";
+                title.textContent = "Salud Óptima [A]";
+                desc.textContent = "¡Increíble! Gastas menos de lo que ganas y tus deudas están controladas. Estás en un gran nivel financiero para ahorrar e invertir.";
+                card.style.borderColor = "#10b981";
+            } else if (remaining >= 0 && expenseRatio <= 0.85 && debtRatio < 0.6) {
+                // ADVERTENCIA (B) - Balance positivo pero con margen estrecho, o deudas moderadas
+                badge.textContent = "B";
+                badge.className = "w-20 h-20 rounded-2xl flex items-center justify-center text-4xl font-black text-white shadow-lg bg-amber-500 transition-all";
+                title.className = "text-lg font-bold text-amber-600 leading-tight";
+                title.textContent = "Estado de Cuidado [B]";
+                desc.textContent = "Tu caja libre es ajustada. Te recomendamos recortar los gastos no esenciales sugeridos para liberar más flujo de dinero.";
+                card.style.borderColor = "#f59e0b";
+            } else {
+                // CRÍTICO (C) - Gasta más del 85%, deudas pesadas o balance negativo
+                badge.textContent = "C";
+                badge.className = "w-20 h-20 rounded-2xl flex items-center justify-center text-4xl font-black text-white shadow-lg bg-rose-500 transition-all";
+                title.className = "text-lg font-bold text-rose-600 leading-tight";
+                title.textContent = "Alerta Financiera [C]";
+                desc.textContent = "¡Cuidado! Tus deudas o gastos fijos consumen casi todo tu ingreso mensual. Aplica con urgencia los recortes sugeridos de inmediato.";
+                card.style.borderColor = "#f43f5e";
+            }
+        }
+
+        // --- RECOMENDACIÓN DE RECORTES BASADO EN GASTOS VARIABLES ---
+        function renderReductionRecommendations() {
+            const container = document.getElementById('reduction-recommendations');
+            if (!container) return;
+
+            let categoriesMap = {};
+            state.transactions.forEach(t => {
+                if (t.type === 'expense') {
+                    categoriesMap[t.category] = (categoriesMap[t.category] || 0) + parseFloat(t.amount);
+                }
+            });
+
+            // Detectar gastos en categorías recortables
+            const reducibleCategories = [
+                { id: 'Entretenimiento', name: 'Entretenimiento y Ocio', factor: 0.40, desc: 'Salidas, suscripciones extras y ocio' },
+                { id: 'Compras', name: 'Compras no esenciales', factor: 0.35, desc: 'Ropa, accesorios u caprichos personales' },
+                { id: 'Otro', name: 'Otros Gastos varios', factor: 0.20, desc: 'Gastos diversos sin justificar fijos' }
+            ];
+
+            let recommendationsHtml = [];
+            let totalEstimatedSavings = 0;
+
+            reducibleCategories.forEach(cat => {
+                const totalSpent = categoriesMap[cat.id] || 0;
+                if (totalSpent > 0) {
+                    const savingsPossible = totalSpent * cat.factor;
+                    totalEstimatedSavings += savingsPossible;
+
+                    recommendationsHtml.push(`
+                        <div class="bg-slate-50 border border-slate-100 rounded-xl p-3 flex flex-col justify-between">
+                            <div>
+                                <span class="text-[10px] uppercase font-bold text-slate-400 block">${cat.name}</span>
+                                <span class="text-xs text-slate-500 mt-1 block leading-tight">Gastado: <strong>${formatCurrency(totalSpent)}</strong>. Sugerido recortar un ${cat.factor * 100}% disminuyendo salidas o caprichos extras.</span>
+                            </div>
+                            <div class="mt-2.5 pt-2 border-t border-slate-200/50 flex justify-between items-center">
+                                <span class="text-[10px] text-emerald-600 font-bold">Rescate Mensual:</span>
+                                <span class="text-xs font-extrabold text-emerald-600">+${formatCurrency(savingsPossible)}</span>
+                            </div>
+                        </div>
+                    `);
+                }
+            });
+
+            if (recommendationsHtml.length === 0) {
+                container.className = "mt-3 block";
+                container.innerHTML = `
+                    <div class="bg-slate-50 border border-slate-100 p-4 rounded-xl text-center text-slate-500 text-xs">
+                        No hemos detectado gastos altos no esenciales (Entretenimiento o Compras). ¡Estás controlando fantásticamente tus gastos superfluos!
+                    </div>
+                `;
+            } else {
+                container.className = "mt-3 grid grid-cols-1 md:grid-cols-2 gap-3";
+                container.innerHTML = recommendationsHtml.join('') + `
+                    <div class="bg-emerald-50 border border-emerald-100 p-3 rounded-xl flex flex-col justify-between md:col-span-2">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xl">💡</span>
+                            <span class="text-xs font-semibold text-emerald-800">Si aplicas todos estos recortes, liberarás un extra mensual estimado de <strong>${formatCurrency(totalEstimatedSavings)}</strong> para pagar más rápido tus deudas.</span>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // --- PLANIFICADOR DE PAGOS EN BASE A INGRESOS ENTRADOS AL MES ---
+        function renderBudgetAllocation() {
+            const container = document.getElementById('payment-box-allocation-container');
+            if (!container) return;
+
+            let totalIncome = 0;
+            let totalExpense = 0;
+
+            state.transactions.forEach(t => {
+                if (t.type === 'income') totalIncome += parseFloat(t.amount);
+                if (t.type === 'expense') totalExpense += parseFloat(t.amount);
+            });
+
+            let recurrentSum = 0;
+            state.recurrents.forEach(r => {
+                recurrentSum += parseFloat(r.amount);
+            });
+
+            // Caja total antes de abonar mínimos a las deudas
+            const boxAvailable = Math.max(0, totalIncome - totalExpense - recurrentSum);
+            
+            // Mínimos Comprometidos Totales
+            const activeDebts = state.debts.filter(d => d.remainingAmount > 0);
+            const totalMinNeeded = activeDebts.reduce((sum, d) => sum + parseFloat(d.minPayment), 0);
+
+            document.getElementById('payment-box-available').textContent = formatCurrency(boxAvailable);
+            document.getElementById('payment-box-committed').textContent = formatCurrency(totalMinNeeded);
+
+            if (activeDebts.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-4 text-indigo-200 text-xs">
+                        No hay deudas activas registradas que pagar este mes. Tu caja libre está segura.
+                    </div>
+                `;
+                return;
+            }
+
+            if (boxAvailable < totalMinNeeded) {
+                container.innerHTML = `
+                    <div class="bg-rose-950/50 border border-rose-800 p-3 rounded-xl text-xs text-rose-200">
+                        ⚠️ <strong>Déficit de Caja:</strong> Tu dinero disponible este mes (${formatCurrency(boxAvailable)}) es inferior al pago mínimo requerido de tus deudas (${formatCurrency(totalMinNeeded)}). Te recomendamos recortar gastos variables urgentemente o aportar ingresos extra.
+                    </div>
+                `;
+                return;
+            }
+
+            // Si hay excedente, planificamos la distribución basada en la estrategia activa
+            const surplus = boxAvailable - totalMinNeeded;
+            let sortedForExtra = [...activeDebts];
+
+            if (state.activeStrategy === 'snowball') {
+                sortedForExtra.sort((a, b) => a.remainingAmount - b.remainingAmount);
+            } else {
+                sortedForExtra.sort((a, b) => b.rate - a.rate);
+            }
+
+            let allocations = sortedForExtra.map((debt, index) => {
+                // Todos reciben el pago mínimo base
+                let recommendedPay = parseFloat(debt.minPayment);
+                
+                // El primer elemento de la estrategia recibe TODO el excedente disponible
+                let isTarget = index === 0 && surplus > 0;
+                if (isTarget) {
+                    recommendedPay += surplus;
+                }
+
+                // Ajustar si el pago recomendado supera la deuda total
+                if (recommendedPay > debt.remainingAmount) {
+                    recommendedPay = debt.remainingAmount;
+                }
+
+                return {
+                    name: debt.name,
+                    min: debt.minPayment,
+                    recommended: recommendedPay,
+                    extra: isTarget ? surplus : 0
+                };
+            });
+
+            let listHtml = allocations.map(alloc => `
+                <div class="flex items-center justify-between p-2 rounded-lg bg-indigo-950/40 border border-indigo-800/30">
+                    <div class="min-w-0">
+                        <p class="text-xs font-bold text-white truncate">${escapeHTML(alloc.name)}</p>
+                        <p class="text-[10px] text-indigo-300">Pago Base Mínimo: ${formatCurrency(alloc.min)}</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-xs font-extrabold text-emerald-400 block">${formatCurrency(alloc.recommended)}</span>
+                        ${alloc.extra > 0 ? `<span class="text-[9px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded font-bold">Abono Extra: +${formatCurrency(alloc.extra)}</span>` : '<span class="text-[9px] text-slate-400">Pago regular</span>'}
+                    </div>
+                </div>
+            `).join('');
+
+            container.innerHTML = `
+                <p class="text-[11px] text-indigo-200 mb-2"><strong>Distribución Óptima de Abonos:</strong> Para estar en verde, el sistema asigna el excedente de tu dinero entrado (${formatCurrency(surplus)}) de forma inteligente a la deuda prioritaria:</p>
+                <div class="space-y-2">
+                    ${listHtml}
+                </div>
+            `;
+        }
+
+        // --- TRANSACCIONES ---
+        function setTransactionType(type) {
+            state.transactionFormType = type;
+            const btnIncome = document.getElementById('btn-type-income');
+            const btnExpense = document.getElementById('btn-type-expense');
+
+            if (type === 'income') {
+                btnIncome.className = "py-2.5 rounded-xl border-2 text-sm font-semibold text-center transition-all bg-emerald-50 border-emerald-500 text-emerald-700";
+                btnExpense.className = "py-2.5 rounded-xl border-2 text-sm font-semibold text-center transition-all bg-white border-slate-200 text-slate-600 hover:bg-slate-50";
+            } else {
+                btnExpense.className = "py-2.5 rounded-xl border-2 text-sm font-semibold text-center transition-all bg-rose-50 border-rose-500 text-rose-700";
+                btnIncome.className = "py-2.5 rounded-xl border-2 text-sm font-semibold text-center transition-all bg-white border-slate-200 text-slate-600 hover:bg-slate-50";
+            }
+        }
+
+        function handleTransactionSubmit(e) {
+            e.preventDefault();
+            
+            const amountInput = document.getElementById('t-amount');
+            const dateInput = document.getElementById('t-date');
+            const descInput = document.getElementById('t-desc');
+            const catSelect = document.getElementById('t-category');
+
+            const transaction = {
+                id: crypto.randomUUID(),
+                type: state.transactionFormType,
+                amount: parseFloat(amountInput.value),
+                date: dateInput.value,
+                desc: descInput.value,
+                category: catSelect.value
+            };
+
+            state.transactions.unshift(transaction); // agregar al inicio de la lista
+            
+            // Limpiar inputs
+            amountInput.value = '';
+            descInput.value = '';
+            
+            showToast('¡Movimiento agregado con éxito!', 'success');
+            renderApp();
+        }
+
+        function deleteTransaction(id) {
+            state.transactions = state.transactions.filter(t => t.id !== id);
+            showToast('Transacción eliminada', 'info');
+            renderApp();
+        }
+
+        function renderTransactions() {
+            const container = document.getElementById('transactions-container');
+            const badgeCount = document.getElementById('transaction-badge-count');
+            
+            badgeCount.textContent = state.transactions.length;
+
+            if (state.transactions.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8 text-slate-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-2 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <p class="text-xs">No hay transacciones registradas todavía.</p>
+                        <button onclick="loadDemoData()" class="text-emerald-600 hover:text-emerald-700 font-semibold text-xs mt-2 underline">Cargar datos demo</button>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = state.transactions.map(t => {
+                const isIncome = t.type === 'income';
+                return `
+                    <div class="flex items-center justify-between p-3.5 rounded-xl border border-slate-150 hover:border-slate-200 bg-white transition-all">
+                        <div class="flex items-center space-x-3 min-w-0">
+                            <div class="${isIncome ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'} p-2 rounded-xl flex-shrink-0">
+                                ${isIncome ? 
+                                    `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>` : 
+                                    `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" /></svg>`
+                                }
+                            </div>
+                            <div class="min-w-0">
+                                <h4 class="text-sm font-semibold text-slate-800 truncate">${escapeHTML(t.desc)}</h4>
+                                <div class="flex items-center space-x-2 text-[11px] text-slate-400 mt-0.5">
+                                    <span class="font-medium bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded">${escapeHTML(t.category)}</span>
+                                    <span>•</span>
+                                    <span>${formatDate(t.date)}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2 flex-shrink-0">
+                            <span class="text-sm font-bold ${isIncome ? 'text-emerald-600' : 'text-slate-800'}">
+                                ${isIncome ? '+' : '-'}${formatCurrency(t.amount)}
+                            </span>
+                            <button onclick="deleteTransaction('${t.id}')" class="text-slate-300 hover:text-rose-500 p-1 rounded hover:bg-slate-50 transition-all" title="Eliminar">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // --- CONTROL DE DEUDAS ---
+        function handleDebtSubmit(e) {
+            e.preventDefault();
+
+            const nameInput = document.getElementById('d-name');
+            const creditorInput = document.getElementById('d-creditor');
+            const amountInput = document.getElementById('d-amount');
+            const rateInput = document.getElementById('d-rate');
+            const minInput = document.getElementById('d-min');
+            const dateInput = document.getElementById('d-date');
+
+            const amount = parseFloat(amountInput.value);
+
+            const debt = {
+                id: crypto.randomUUID(),
+                name: nameInput.value,
+                creditor: creditorInput.value,
+                amount: amount,
+                remainingAmount: amount, // Inicialmente es el total
+                rate: parseFloat(rateInput.value),
+                minPayment: parseFloat(minInput.value),
+                dueDate: dateInput.value,
+                payments: []
+            };
+
+            state.debts.push(debt);
+
+            // Limpiar formulario y cerrar modal
+            document.getElementById('debt-form').reset();
+            toggleModal('debt-modal', false);
+            showToast('Deuda registrada exitosamente', 'success');
+            renderApp();
+        }
+
+        function openPaymentModal(debtId) {
+            const debt = state.debts.find(d => d.id === debtId);
+            if (!debt) return;
+
+            document.getElementById('p-debt-id').value = debtId;
+            document.getElementById('p-debt-name').textContent = `${debt.name} (${debt.creditor})`;
+            document.getElementById('p-amount').value = debt.minPayment;
+            document.getElementById('p-amount-max').textContent = `Saldo actual pendiente: ${formatCurrency(debt.remainingAmount)}`;
+            
+            const todayStr = new Date().toISOString().split('T')[0];
+            document.getElementById('p-date').value = todayStr;
+
+            toggleModal('payment-modal', true);
+        }
+
+        function handlePaymentSubmit(e) {
+            e.preventDefault();
+
+            const id = document.getElementById('p-debt-id').value;
+            const amountStr = document.getElementById('p-amount').value;
+            const dateStr = document.getElementById('p-date').value;
+            const autoExpense = document.getElementById('p-auto-expense').checked;
+
+            const paymentAmount = parseFloat(amountStr);
+            const debtIndex = state.debts.findIndex(d => d.id === id);
+
+            if (debtIndex === -1) return;
+
+            const debt = state.debts[debtIndex];
+
+            if (paymentAmount > debt.remainingAmount) {
+                showToast('El abono no puede superar la deuda total pendiente.', 'warning');
+                return;
+            }
+
+            // Realizar pago en la deuda
+            debt.remainingAmount = Math.max(0, debt.remainingAmount - paymentAmount);
+            debt.payments.push({
+                amount: paymentAmount,
+                date: dateStr
+            });
+
+            // Ajustar próxima fecha de vencimiento sumando 1 mes para mantener orden
+            const nextDue = new Date(debt.dueDate);
+            nextDue.setMonth(nextDue.getMonth() + 1);
+            debt.dueDate = nextDue.toISOString().split('T')[0];
+
+            // Si se marcó auto-gasto, se añade una transacción de tipo gasto
+            if (autoExpense) {
+                const autoTx = {
+                    id: crypto.randomUUID(),
+                    type: 'expense',
+                    amount: paymentAmount,
+                    date: dateStr,
+                    desc: `Abono de deuda: ${debt.name}`,
+                    category: 'Vivienda'
+                };
+                state.transactions.unshift(autoTx);
+            }
+
+            toggleModal('payment-modal', false);
+            showToast(`Pago de ${formatCurrency(paymentAmount)} aplicado exitosamente.`, 'success');
+            renderApp();
+        }
+
+        function deleteDebt(id) {
+            state.debts = state.debts.filter(d => d.id !== id);
+            showToast('Deuda eliminada del registro.', 'info');
+            renderApp();
+        }
+
+        function renderDebts() {
+            const container = document.getElementById('debts-container');
+            
+            if (state.debts.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12 text-slate-400 border-2 border-dashed border-slate-150 rounded-xl bg-slate-50/50">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-14 w-14 mx-auto mb-2 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
+                        <p class="text-sm font-semibold text-slate-600">No tienes deudas registradas</p>
+                        <p class="text-xs text-slate-400 max-w-sm mx-auto mt-1">Registrar tus deudas te permite visualizar plazos de pago automáticos y planificar una estrategia óptima para liquidarlas.</p>
+                        <button onclick="toggleModal('debt-modal', true)" class="mt-4 bg-slate-900 text-white text-xs font-semibold px-4 py-2 rounded-lg hover:bg-slate-800 transition-all">Añadir Primera Deuda</button>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = state.debts.map(d => {
+                const percentage = Math.round(((d.amount - d.remainingAmount) / d.amount) * 100) || 0;
+                
+                // Calcular días para vencimiento
+                const daysLeft = getDaysRemaining(d.dueDate);
+                let badgeColor = '';
+                let badgeText = '';
+
+                if (d.remainingAmount === 0) {
+                    badgeColor = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+                    badgeText = 'LIQUIDADA';
+                } else if (daysLeft < 0) {
+                    badgeColor = 'bg-rose-50 text-rose-700 border-rose-200 animate-pulse';
+                    badgeText = `VENCIDA (Hace ${Math.abs(daysLeft)} días)`;
+                } else if (daysLeft <= 7) {
+                    badgeColor = 'bg-amber-50 text-amber-700 border-amber-200';
+                    badgeText = `Paga pronto (en ${daysLeft} días)`;
+                } else {
+                    badgeColor = 'bg-indigo-50 text-indigo-700 border-indigo-200';
+                    badgeText = `En plazo (${daysLeft} días)`;
+                }
+
+                return `
+                    <div class="border border-slate-150 rounded-2xl p-5 hover:shadow-md transition-all bg-white">
+                        <!-- Cabecera de Deuda -->
+                        <div class="flex justify-between items-start gap-3">
+                            <div>
+                                <h3 class="font-bold text-slate-800 text-base leading-snug">${escapeHTML(d.name)}</h3>
+                                <p class="text-xs text-slate-400 mt-0.5">Acreedor: <span class="font-medium text-slate-600">${escapeHTML(d.creditor)}</span></p>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-xs border px-2.5 py-1 rounded-full font-bold uppercase tracking-wider ${badgeColor}">
+                                    ${badgeText}
+                                </span>
+                                <button onclick="deleteDebt('${d.id}')" class="text-slate-300 hover:text-rose-500 p-1 rounded hover:bg-slate-50 transition-all" title="Eliminar deudor">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Indicadores Numéricos -->
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 my-4 pt-3 border-t border-slate-50">
+                            <div>
+                                <span class="text-[10px] text-slate-400 block uppercase font-bold tracking-wider">Monto Inicial</span>
+                                <span class="text-xs sm:text-sm font-semibold text-slate-500">${formatCurrency(d.amount)}</span>
+                            </div>
+                            <div>
+                                <span class="text-[10px] text-slate-400 block uppercase font-bold tracking-wider">Saldo Pendiente</span>
+                                <span class="text-xs sm:text-sm font-bold text-slate-900">${formatCurrency(d.remainingAmount)}</span>
+                            </div>
+                            <div>
+                                <span class="text-[10px] text-slate-400 block uppercase font-bold tracking-wider">Pago Mínimo</span>
+                                <span class="text-xs sm:text-sm font-semibold text-slate-700">${formatCurrency(d.minPayment)}/mes</span>
+                            </div>
+                            <div>
+                                <span class="text-[10px] text-slate-400 block uppercase font-bold tracking-wider">Tasa de Interés</span>
+                                <span class="text-xs sm:text-sm font-semibold text-indigo-600">${d.rate}% E.A.</span>
+                            </div>
+                        </div>
+
+                        <!-- Barra de Progreso de Pago -->
+                        <div>
+                            <div class="flex justify-between text-[11px] font-medium text-slate-500 mb-1.5">
+                                <span>Progreso de Liquidación</span>
+                                <span class="font-bold text-slate-700">${percentage}% Pagado</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                                <div class="bg-gradient-to-r from-emerald-500 to-teal-600 h-2.5 rounded-full transition-all duration-500" style="width: ${percentage}%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Acciones y Fecha -->
+                        <div class="flex items-center justify-between mt-4 pt-4 border-t border-slate-50">
+                            <span class="text-xs text-slate-400 flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                Vence: <strong class="ml-1 text-slate-600 font-semibold">${formatDate(d.dueDate)}</strong>
+                            </span>
+                            ${d.remainingAmount > 0 ? 
+                                `<button onclick="openPaymentModal('${d.id}')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-bold px-4.5 py-2 rounded-xl transition-all">
+                                    Abonar Pago
+                                </button>` : 
+                                `<span class="text-emerald-600 text-xs font-bold flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    ¡Deuda pagada!
+                                </span>`
+                            }
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // --- MÉTODO BOLA DE NIEVE Y AVALANCHA ---
+        function changeStrategy(strat) {
+            state.activeStrategy = strat;
+            
+            const btnSnowball = document.getElementById('btn-strategy-snowball');
+            const btnAvalanche = document.getElementById('btn-strategy-avalanche');
+
+            if (strat === 'snowball') {
+                btnSnowball.className = "border-b-2 border-indigo-600 text-indigo-600 py-2 px-4 text-xs font-bold transition-all";
+                btnAvalanche.className = "border-b-2 border-transparent text-slate-400 hover:text-slate-600 py-2 px-4 text-xs font-bold transition-all";
+            } else {
+                btnAvalanche.className = "border-b-2 border-indigo-600 text-indigo-600 py-2 px-4 text-xs font-bold transition-all";
+                btnSnowball.className = "border-b-2 border-transparent text-slate-400 hover:text-slate-600 py-2 px-4 text-xs font-bold transition-all";
+            }
+
+            renderStrategyRecommendation();
+            renderBudgetAllocation(); // Actualizar el asignador de abonos también
+        }
+
+        function renderStrategyRecommendation() {
+            const container = document.getElementById('strategy-info');
+            
+            // Filtrar deudas activas (con saldo pendiente)
+            const activeDebts = state.debts.filter(d => d.remainingAmount > 0);
+
+            if (activeDebts.length === 0) {
+                container.innerHTML = `
+                    <p class="text-xs text-slate-400 text-center py-4">
+                        ¡Felicidades! No tienes deudas pendientes. Tu estrategia actual consiste en ahorrar e invertir para tu futuro.
+                    </p>
+                `;
+                return;
+            }
+
+            let sortedDebts = [...activeDebts];
+            let explanation = "";
+
+            if (state.activeStrategy === 'snowball') {
+                // Ordenar de menor saldo a mayor saldo
+                sortedDebts.sort((a, b) => a.remainingAmount - b.remainingAmount);
+                explanation = `El método <strong>Bola de Nieve</strong> prioriza liquidar primero tus saldos más pequeños, sin importar el interés. Esto te da "victorias psicológicas" rápidas que te motivan a seguir pagando.`;
+            } else {
+                // Ordenar de mayor interés a menor interés
+                sortedDebts.sort((a, b) => b.rate - a.rate);
+                explanation = `El método <strong>Avalancha</strong> prioriza liquidar las deudas que te cobran la tasa de interés más alta. Matemáticamente, este método es el que te hace ahorrar la mayor cantidad de dinero en intereses totales.`;
+            }
+
+            let orderListHtml = sortedDebts.map((d, index) => {
+                let badge = "";
+                if (index === 0) {
+                    badge = `<span class="bg-rose-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full mr-2">PAGAR PRIMERO</span>`;
+                } else if (index === sortedDebts.length - 1) {
+                    badge = `<span class="bg-slate-200 text-slate-600 text-[10px] font-semibold px-2 py-0.5 rounded-full mr-2">Última</span>`;
+                } else {
+                    badge = `<span class="bg-indigo-50 text-indigo-600 text-[10px] font-semibold px-2 py-0.5 rounded-full mr-2">Paso ${index + 1}</span>`;
+                }
+
+                return `
+                    <div class="flex justify-between items-center py-2.5 border-b border-slate-100 last:border-b-0">
+                        <div class="flex items-center min-w-0">
+                            ${badge}
+                            <span class="text-xs font-bold text-slate-800 truncate">${escapeHTML(d.name)}</span>
+                        </div>
+                        <div class="text-right flex-shrink-0">
+                            <span class="text-xs font-semibold text-slate-700 block">${formatCurrency(d.remainingAmount)}</span>
+                            <span class="text-[9px] text-slate-400">Interés: ${d.rate}%</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = `
+                <p class="text-xs text-slate-600 leading-relaxed mb-4">${explanation}</p>
+                <div class="bg-white rounded-xl p-3 border border-slate-150 shadow-sm">
+                    <h4 class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider mb-2">Orden Recomendado de Pago:</h4>
+                    ${orderListHtml}
+                </div>
+                <p class="text-[10px] text-slate-400 mt-3 italic">**Instrucciones: Continúa haciendo los pagos mínimos mensuales de todas tus deudas y destina cualquier dinero extra disponible únicamente a tu deuda objetivo número 1 (la primera de la lista) hasta liquidarla por completo.</p>
+            `;
+        }
+
+        // --- REVISIÓN DE FECHAS DE PAGO ---
+        function checkUpcomingDueDates() {
+            const alertZone = document.getElementById('alert-zone');
+            const alertText = document.getElementById('alert-text');
+            
+            const upcoming = state.debts.filter(d => {
+                if (d.remainingAmount === 0) return false;
+                const days = getDaysRemaining(d.dueDate);
+                return days >= 0 && days <= 7; // Próximos 7 días
+            });
+
+            const overdue = state.debts.filter(d => {
+                if (d.remainingAmount === 0) return false;
+                const days = getDaysRemaining(d.dueDate);
+                return days < 0; // Vencido
+            });
+
+            if (overdue.length > 0) {
+                alertZone.classList.remove('hidden');
+                alertZone.className = "mb-6 bg-rose-50 border-l-4 border-rose-500 p-4 rounded-r-xl shadow-sm flex items-start space-x-3";
+                alertText.innerHTML = `⚠️ <strong>¡Atención!</strong> Tienes <strong>${overdue.length} deuda(s) vencida(s)</strong> (${overdue.map(d => d.name).join(', ')}). Abónalas pronto para evitar cargos por mora.`;
+            } else if (upcoming.length > 0) {
+                alertZone.classList.remove('hidden');
+                alertZone.className = "mb-6 bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-xl shadow-sm flex items-start space-x-3";
+                alertText.innerHTML = `📅 <strong>Recordatorio de pago:</strong> Tienes deudas con vencimiento cercano en los próximos 7 días: <strong>${upcoming.map(d => `${d.name} (${formatDate(d.dueDate)})`).join(', ')}</strong>.`;
+            } else {
+                alertZone.classList.add('hidden');
+            }
+        }
+
+        function closeAlert() {
+            document.getElementById('alert-zone').classList.add('hidden');
+        }
+
+        // --- EXCEL (CSV) EXPORT FUNCTION ---
+        function exportToExcel() {
+            if (state.transactions.length === 0 && state.debts.length === 0 && state.recurrents.length === 0) {
+                showToast('No tienes información registrada para exportar.', 'warning');
+                return;
+            }
+
+            let csvContent = "data:text/csv;charset=utf-8,";
+            
+            // SECCIÓN 1: TRANSACCIONES
+            csvContent += "REGISTRO DE TRANSACCIONES (BALANCE)\n";
+            csvContent += "Fecha,Tipo,Monto,Descripcion,Categoria\n";
+            state.transactions.forEach(t => {
+                const descCleaned = t.desc.replace(/,/g, " ");
+                const catCleaned = t.category.replace(/,/g, " ");
+                csvContent += `${t.date},${t.type === 'income' ? 'Ingreso' : 'Gasto'},${t.amount},${descCleaned},${catCleaned}\n`;
+            });
+
+            csvContent += "\n\n";
+
+            // SECCIÓN 2: GASTOS RECURRENTES
+            csvContent += "GASTOS FIJOS RECURRENTES\n";
+            csvContent += "Nombre Gasto,Monto Mensual,Dia Cobro,Categoria\n";
+            state.recurrents.forEach(r => {
+                const nameCleaned = r.name.replace(/,/g, " ");
+                const catCleaned = r.category.replace(/,/g, " ");
+                csvContent += `${nameCleaned},${r.amount},${r.day},${catCleaned}\n`;
+            });
+
+            csvContent += "\n\n";
+
+            // SECCIÓN 3: DEUDAS
+            csvContent += "REGISTRO Y SEGUIMIENTO DE DEUDAS\n";
+            csvContent += "Deuda,Acreedor,Monto Inicial,Saldo Pendiente,Tasa Interes (%),Pago Minimo,Fecha Vencimiento\n";
+            state.debts.forEach(d => {
+                const nameCleaned = d.name.replace(/,/g, " ");
+                const creditorCleaned = d.creditor.replace(/,/g, " ");
+                csvContent += `${nameCleaned},${creditorCleaned},${d.amount},${d.remainingAmount},${d.rate},${d.minPayment},${d.dueDate}\n`;
+            });
+
+            // Descarga de archivo
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `FinanzApp_Mis_Finanzas_Pro_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast('Archivo Excel/CSV generado con éxito. ¡Compruébalo!', 'success');
+        }
+
+        // --- SISTEMA DE DATOS DEMO Y RESET ---
+        function loadDemoData(isFirstLoad = false) {
+            const demoTransactions = [
+                { id: "t1", type: "income", amount: 3200.00, date: getOffsetDate(-10), desc: "Sueldo Neto de Fin de Mes", category: "Salario" },
+                { id: "t2", type: "income", amount: 450.00, date: getOffsetDate(-5), desc: "Proyecto de Diseño Extra Freelance", category: "Salario" },
+                { id: "t3", type: "expense", amount: 120.00, date: getOffsetDate(-8), desc: "Compra Semanal Supermercado", category: "Alimentos" },
+                { id: "t4", type: "expense", amount: 150.00, date: getOffsetDate(-4), desc: "Cena en Restaurante con Amigos", category: "Entretenimiento" },
+                { id: "t5", type: "expense", amount: 200.00, date: getOffsetDate(-2), desc: "Compra Zapatos de Marca", category: "Compras" }
+            ];
+
+            const demoRecurrents = [
+                { id: "r1", name: "Servicio de Internet Fibra", amount: 45.00, day: 5, category: "Telecomunicaciones" },
+                { id: "r2", name: "Recibo de Luz Enel", amount: 60.00, day: 12, category: "Servicios" },
+                { id: "r3", name: "Plan de Telefonía Móvil", amount: 25.00, day: 15, category: "Telecomunicaciones" }
+            ];
+
+            const demoDebts = [
+                {
+                    id: "d1",
+                    name: "Tarjeta Visa Platinum",
+                    creditor: "Banco Central",
+                    amount: 2500.00,
+                    remainingAmount: 1800.00,
+                    rate: 26.5,
+                    minPayment: 90.00,
+                    dueDate: getOffsetDate(4),
+                    payments: []
+                },
+                {
+                    id: "d2",
+                    name: "Crédito Automotriz",
+                    creditor: "Financiera Vial",
+                    amount: 8000.00,
+                    remainingAmount: 6200.00,
+                    rate: 12.4,
+                    minPayment: 210.00,
+                    dueDate: getOffsetDate(20),
+                    payments: []
+                },
+                {
+                    id: "d3",
+                    name: "Préstamo Personal Express",
+                    creditor: "Prestamás SA",
+                    amount: 500.00,
+                    remainingAmount: 350.00,
+                    rate: 35.0,
+                    minPayment: 60.00,
+                    dueDate: getOffsetDate(-2), // Vencida
+                    payments: []
+                }
+            ];
+
+            state.transactions = demoTransactions;
+            state.recurrents = demoRecurrents;
+            state.debts = demoDebts;
+
+            renderApp();
+            if (!isFirstLoad) {
+                showToast('Datos de demostración cargados exitosamente.', 'success');
+            }
+        }
+
+        function resetAllData() {
+            if (confirm('¿Estás seguro de que deseas eliminar todas tus deudas, gastos fijos y transacciones? Esta acción no se puede deshacer.')) {
+                state = {
+                    transactions: [],
+                    debts: [],
+                    recurrents: [],
+                    activeStrategy: 'snowball',
+                    transactionFormType: 'income'
+                };
+                renderApp();
+                showToast('Todos los datos han sido borrados de tu navegador.', 'info');
+            }
+        }
+
+        // --- FUNCIONES DE UTILIDAD (Helpers) ---
+        function formatCurrency(val) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD'
+            }).format(val);
+        }
+
+        function formatDate(dateStr) {
+            const parts = dateStr.split('-');
+            if (parts.length === 3) {
+                return `${parts[2]}/${parts[1]}/${parts[0]}`;
+            }
+            return dateStr;
+        }
+
+        function getDaysRemaining(dueDateStr) {
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            
+            const dueDate = new Date(dueDateStr);
+            dueDate.setHours(0,0,0,0);
+            
+            const diffTime = dueDate - today;
+            return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        }
+
+        function getOffsetDate(daysOffset) {
+            const date = new Date();
+            date.setDate(date.getDate() + daysOffset);
+            return date.toISOString().split('T')[0];
+        }
+
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g, 
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+            );
+        }
+
+        // Manejo de Modales con animaciones suaves
+        function toggleModal(id, show) {
+            const modal = document.getElementById(id);
+            const card = document.getElementById(`${id}-card`);
+            
+            if (show) {
+                modal.classList.remove('hidden');
+                setTimeout(() => {
+                    modal.classList.remove('opacity-0');
+                    if (card) {
+                        card.classList.remove('scale-95');
+                        card.classList.add('scale-100');
+                    }
+                }, 10);
+            } else {
+                modal.classList.add('opacity-0');
+                if (card) {
+                    card.classList.remove('scale-100');
+                    card.classList.add('scale-95');
+                }
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                }, 300);
+            }
+        }
+
+        // Toast Notifications
+        function showToast(msg, type = 'info') {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-message');
+            const toastIcon = document.getElementById('toast-icon');
+
+            toastMsg.textContent = msg;
+
+            // Ajustar iconos según tipo
+            if (type === 'success') {
+                toastIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>`;
+            } else if (type === 'warning') {
+                toastIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>`;
+            } else {
+                toastIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`;
+            }
+
+            // Animar entrada
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            // Salida automática
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
