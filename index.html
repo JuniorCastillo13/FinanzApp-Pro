@@ -795,7 +795,7 @@
         async function loadStateFromFirestore(uid) {
             try {
                 // REGLA 1: Ruta estricta de datos privados del usuario
-                const docRef = window.firestoreDoc(window.firebaseDb, 'artifacts', window.appId, 'users', uid, 'state', 'globalState');
+                const docRef = window.firestoreDoc(window.firebaseDb,'finanzapp','principal');
                 const docSnap = await window.firestoreGetDoc(docRef);
 
                 if (docSnap.exists()) {
@@ -871,8 +871,7 @@
             saveDebounceTimeout = setTimeout(async () => {
                 if (window.firebaseAuth && window.firebaseAuth.currentUser) {
                     try {
-                        const uid = window.firebaseAuth.currentUser.uid;
-                        const docRef = window.firestoreDoc(window.firebaseDb, 'artifacts', window.appId, 'users', uid, 'state', 'globalState');
+                        const docRef = window.firestoreDoc(window.firebaseDb,'finanzapp','principal');
                         await window.firestoreSetDoc(docRef, {
                             state: state,
                             updatedAt: new Date().toISOString()
